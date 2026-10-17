@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#fbfaf7">
+  <meta name="description" content="Blink.ai, an independent chat and creative studio.">
+  <title>Blink.ai</title>
+  <link rel="manifest" href="/manifest.webmanifest">
+  <link rel="stylesheet" href="/styles.css?v=2">
+</head>
+<body>
+  <section class="auth-screen" id="authScreen" hidden>
+    <div class="auth-brand"><span class="brand-mark">b.</span><span>Blink<span class="brand-dot">.</span>ai</span></div>
+    <div class="auth-content" id="authContent"></div>
+    <p class="auth-foot">An independent little intelligence. Your conversations stay yours.</p>
+  </section>
+
+  <div class="app-shell" id="appShell" hidden>
+    <aside class="sidebar" id="sidebar">
+      <div class="side-top">
+        <a class="brand" href="#" aria-label="Blink.ai home"><span class="brand-mark">b.</span><span>Blink<span class="brand-dot">.</span>ai</span></a>
+        <button class="icon-button hide-mobile" id="collapseButton" aria-label="Collapse sidebar" title="Collapse sidebar"><svg viewBox="0 0 24 24"><path d="M4 5h16M4 12h10M4 19h16M18 10l-2 2 2 2"/></svg></button>
+      </div>
+      <button class="new-chat" id="newChatButton"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg><span>New chat</span><kbd>⌘ K</kbd></button>
+      <div class="nav-label">Workspace</div>
+      <button class="side-link active" data-view="chat"><svg viewBox="0 0 24 24"><path d="M20 11.5a7.5 7.5 0 0 1-7.5 7.5H5l1.6-3.3A7.5 7.5 0 1 1 20 11.5Z"/></svg><span>Chat</span></button>
+      <button class="side-link" data-view="images"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="m21 15-5-5L5 21"/></svg><span>Image studio</span></button>
+      <div class="history-heading"><span>Recent</span><button class="text-button" id="clearHistoryButton" title="Clear recent chats">Clear</button></div>
+      <div class="chat-list" id="chatList"></div>
+      <div class="sidebar-bottom"><div class="model-status"><span></span><div><strong>Blink Core</strong><small>Local model · v0.1</small></div></div>
+        <button class="profile-button" id="settingsButton"><span class="avatar" id="avatar">B</span><span class="profile-copy"><strong id="profileName">Guest</strong><small id="profileEmail">Guest session</small></span><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.9l.1.1-1.7 2.9-.2-.1a1.7 1.7 0 0 0-1.8.1l-.2.1h-3.4l-.1-.2a1.7 1.7 0 0 0-1.5-1l-.2-.1-2.9 1.7-.1-.2a1.7 1.7 0 0 0-1-1.5l-.1-.2v-3.4l.2-.1a1.7 1.7 0 0 0 1-1.5l.1-.2-1.7-2.9.2-.1a1.7 1.7 0 0 0 1.5-1l.2-.1h3.4l.1.2a1.7 1.7 0 0 0 1.5 1l.2.1 2.9-1.7.1.2a1.7 1.7 0 0 0 1 1.5l.1.2z"/></svg></button>
+      </div>
+    </aside>
+
+    <main class="main-panel">
+      <header class="topbar"><button class="icon-button mobile-menu" id="mobileMenuButton" aria-label="Open menu"><svg viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h16"/></svg></button><span class="mobile-brand">Blink<span class="brand-dot">.</span>ai</span><div class="topbar-right"><span class="model-pill"><span></span>Blink Core</span><button class="icon-button mobile-settings" id="mobileSettingsButton" aria-label="Settings"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19 13.5a7.5 7.5 0 0 0 0-3l2-1.2-2-3.5-2.2 1a7.5 7.5 0 0 0-2.6-1.5L14 3h-4l-.3 2.3a7.5 7.5 0 0 0-2.6 1.5l-2.2-1-2 3.5 2 1.2a7.5 7.5 0 0 0 0 3l-2 1.2 2 3.5 2.2-1a7.5 7.5 0 0 0 2.6 1.5L10 21h4l.3-2.3a7.5 7.5 0 0 0 2.6-1.5l2.2 1 2-3.5z"/></svg></button></div></header>
+      <section class="conversation" id="conversation" aria-live="polite"></section>
+      <section class="welcome" id="welcome">
+        <div class="welcome-eyebrow"><span class="sparkle">✳</span> Your space to think</div>
+        <h1>What’s on your<br><span>mind today?</span></h1>
+        <p>A fresh start, a curious question, or a half-formed idea. Begin anywhere.</p>
+        <div class="prompt-grid">
+          <button class="prompt-card" data-prompt="Help me plan a focused week"><span class="prompt-icon coral">↗</span><span><strong>Find a little focus</strong><small>Plan a calmer, clearer week</small></span></button>
+          <button class="prompt-card" data-prompt="Brainstorm some fresh ideas for a creative project"><span class="prompt-icon green">✳</span><span><strong>Start with a spark</strong><small>Let’s make something together</small></span></button>
+          <button class="prompt-card" data-prompt="Help me turn a big goal into small steps"><span class="prompt-icon blue">⌁</span><span><strong>Untangle a big idea</strong><small>Turn a goal into next steps</small></span></button>
+          <button class="prompt-card" data-prompt="Remember that I prefer concise answers"><span class="prompt-icon gold">♡</span><span><strong>Make it more personal</strong><small>Tell Blink what matters to you</small></span></button>
+        </div>
+      </section>
+      <section class="settings-view" id="settingsView" hidden></section>
+      <section class="studio-view" id="studioView" hidden></section>
+      <div class="composer-wrap" id="composerWrap">
+        <div class="attachment-list" id="attachmentList"></div>
+        <form class="composer" id="chatForm">
+          <input type="file" id="fileInput" accept="image/*,.txt,.md,.pdf,.doc,.docx" multiple hidden>
+          <button class="attach-button" type="button" id="attachButton" aria-label="Attach files" title="Attach a file"><svg viewBox="0 0 24 24"><path d="m8 12.5 7.2-7.2a3.5 3.5 0 0 1 5 5L10 20.5a5.5 5.5 0 0 1-7.8-7.8L12.8 2.1"/></svg></button>
+          <textarea id="messageInput" rows="1" placeholder="Message Blink.ai" aria-label="Message Blink.ai"></textarea>
+          <button class="send-button" id="sendButton" type="submit" aria-label="Send message" disabled><svg viewBox="0 0 24 24"><path d="M12 19V5m-7 7 7-7 7 7"/></svg></button>
+        </form>
+        <div class="composer-note"><span>Original Blink Core · no external AI APIs</span><span>Enter to send · Shift + Enter for a new line</span></div>
+      </div>
+      <footer class="footer-note" id="footerNote">Blink Core is an experimental small model. It can make mistakes.</footer>
+    </main>
+  </div>
+  <div class="toast" id="toast" role="status"></div>
+  <script src="/app.js?v=2" defer></script>
+</body>
+</html>
