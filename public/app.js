@@ -57,6 +57,7 @@ async function loadChats() {
   const data = await api("/api/chats");
   state.chats = data.chats || [];
   state.user.memories = data.memories || [];
+  state.user.documents = data.documents || [];
   renderChatList();
 }
 
@@ -210,7 +211,7 @@ async function sendMessage(text) {
   const files = state.files.splice(0);
   renderAttachments();
   addMessage("user", prompt, files);
-  const history = state.messages.map(({ role, content }) => ({ role, content }));
+  const history = state.messages.slice(0, -1).map(({ role, content }) => ({ role, content }));
   $("#messageInput").value = "";
   $("#messageInput").style.height = "auto";
   $("#sendButton").disabled = true;
@@ -281,10 +282,26 @@ function showSettings() {
   $("#footerNote").hidden = true;
   setActiveNav("");
   const theme = state.theme;
-  const accountMessage = state.user.guest ? "You are browsing as a guest. Create an account to keep your chats between visits." : `Signed in as ${escapeHtml(state.user.email)}. Your local model learns only from text in your own chats.`;
-  $("#settingsView").innerHTML = `<h1 class="page-heading">Settings</h1><p class="page-subtitle">A few things to make Blink feel like yours.</p><section class="settings-section"><h2>Appearance</h2><p>Choose a theme for this device.</p><div class="setting-row"><strong>Color theme</strong><div class="theme-switch"><button data-theme-choice="light" class="${theme === "light" ? "selected" : ""}">☼ Light</button><button data-theme-choice="dark" class="${theme === "dark" ? "selected" : ""}">☾ Dark</button></div></div></section><section class="settings-section"><h2>Account</h2><p>${accountMessage}</p>${state.user.guest ? '<button class="outline-button" data-auth="signup">Create an account</button>' : `<div class="setting-row"><div><strong>Change password</strong><small>Use at least 8 characters.</small></div><button class="outline-button" id="passwordButton">Update password</button></div><div id="passwordForm"></div>`}<div class="setting-row"><strong>Current session</strong><button class="outline-button" id="logoutButton">${state.user.guest ? "Exit guest session" : "Sign out"}</button></div></section><section class="settings-section"><h2>Memory</h2><p>Blink Core keeps short details you explicitly asked it to remember, plus your saved conversations.</p><div class="account-note">${(state.user.memories || []).map(escapeHtml).join("<br>") || "No personal notes saved yet."}</div></section><section class="settings-section"><h2>About Blink Core</h2><p>An experimental in-house statistical language model. It does not use external AI services, and it is not a large language model.</p></section>`;
+  const accountMessage = state.user.guest ? "You are browsing as a guest. Create an account to keep your chats between visits." : `Signed in as ${escapeHtml(state.user.email)}. Your saved chats and uploaded text stay with this server.`;
+  const savedNotes = [...(state.user.memories || []), ...(state.user.documents || []).map((document) => `Uploaded text: ${document.name}`)];
+  $("#settingsView").innerHTML = `
+    <h1 class="page-heading">Settings</h1>
+    <p class="page-subtitle">A few things to make Blink feel like yours.</p>
+    <section class="settings-section"><h2>Appearance</h2><p>Choose a theme for this device.</p><div class="setting-row"><strong>Color theme</strong><div class="theme-switch"><button data-theme-choice="light" class="${theme === "light" ? "selected" : ""}">☼ Light</button><button data-theme-choice="dark" class="${theme === "dark" ? "selected" : ""}">☾ Dark</button></div></div></section>
+    <section class="settings-section"><h2>Account</h2><p>${accountMessage}</p>${state.user.guest ? '<button class="outline-button" data-auth="signup">Create an account</button>' : `<div class="setting-row"><div><strong>Change password</strong><small>Use at least 8 characters.</small></div><button class="outline-button" id="passwordButton">Update password</button></div><div id="passwordForm"></div>`}<div class="setting-row"><strong>Current session</strong><button class="outline-button" id="logoutButton">${state.user.guest ? "Exit guest session" : "Sign out"}</button></div></section>
+    <section class="settings-section"><h2>Memory and sources</h2><p>Blink searches details you asked it to remember, your saved chats, and uploaded text or Markdown. Uploaded text is stored with your account on this server.</p><div class="account-note">${savedNotes.map(escapeHtml).join("<br>") || "No personal notes or uploaded text saved yet."}</div>${savedNotes.length ? '<div class="setting-row"><span></span><button class="outline-button" id="clearMemoryButton">Clear saved notes and uploads</button></div>' : ""}</section>
+    <section class="settings-section"><h2>About Blink Core</h2><p>An in-house local retrieval system. It searches editable guides, saved notes, and uploaded text; it is not a trained language model and does not use external AI services.</p></section>`;
   $("#settingsView").querySelectorAll("[data-theme-choice]").forEach((button) => button.addEventListener("click", () => { setTheme(button.dataset.themeChoice); showSettings(); }));
   $("#passwordButton")?.addEventListener("click", () => renderPasswordForm());
+  $("#clearMemoryButton")?.addEventListener("click", async () => {
+    try {
+      await api("/api/settings/knowledge", { method: "DELETE" });
+      state.user.memories = [];
+      state.user.documents = [];
+      showSettings();
+      showToast("Saved notes and uploaded text cleared.");
+    } catch (error) { showToast(error.message); }
+  });
   $("#logoutButton").addEventListener("click", async () => { await api("/api/auth/logout", { method: "POST", body: "{}" }); state.user = null; showAuth(); });
   $("#settingsView").querySelector("[data-auth='signup']")?.addEventListener("click", () => showAuth("signup"));
   closeMobileSidebar();

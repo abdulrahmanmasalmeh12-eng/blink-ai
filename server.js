@@ -2,23 +2,14 @@ const http = require("node:http");
 const fs = require("node:fs");
 const path = require("node:path");
 const crypto = require("node:crypto");
+const { searchContext } = require("./lib/retrieval");
 
 const PORT = Number(process.env.PORT || 3000);
 const ROOT = __dirname;
 const DATA_DIR = path.join(ROOT, "data");
 const DATA_FILE = path.join(DATA_DIR, "store.json");
+const KNOWLEDGE = JSON.parse(fs.readFileSync(path.join(ROOT, "knowledge.json"), "utf8"));
 const MIME = { ".html": "text/html; charset=utf-8", ".css": "text/css; charset=utf-8", ".js": "text/javascript; charset=utf-8", ".webmanifest": "application/manifest+json", ".svg": "image/svg+xml" };
-const SEED_TEXT = [
-  "A useful plan begins with a clear goal, a short list of steps, and time to review what worked.",
-  "Good writing is specific, readable, and organized around the question the reader is trying to answer.",
-  "When solving a problem, first describe the result you want. Then gather evidence, test one small idea, and adjust based on what you learn.",
-  "Creative work grows through curiosity and practice. Collect a few ideas, choose one direction, and make a first draft you can improve.",
-  "A calm day can be planned by choosing one important task, one small task, and a real break between them.",
-  "Learning something new takes patience. Small experiments make difficult subjects easier to understand over time.",
-  "A recipe can be adapted by tasting as you go and changing one ingredient at a time.",
-  "A story needs a character, a desire, and something that makes the next choice difficult.",
-  "Clear code uses names that explain intent, small functions, and tests that check behavior at its boundaries."
-].join(" ");
 
 function readStore() {
   try {
@@ -87,32 +78,6 @@ function tokenize(text) {
   return (String(text || "").toLowerCase().match(/[a-z0-9']+|[.!?]/g) || []).slice(-4000);
 }
 
-function textModel(text, prompt) {
-  const words = tokenize(text);
-  const transitions = new Map();
-  for (let index = 0; index < words.length - 2; index += 1) {
-    const key = `${words[index]} ${words[index + 1]}`;
-    const choices = transitions.get(key) || [];
-    choices.push(words[index + 2]);
-    transitions.set(key, choices);
-  }
-  const promptWords = tokenize(prompt).filter((word) => word.length > 3);
-  const startingKeys = [...transitions.keys()].filter((key) => promptWords.some((word) => key.includes(word)));
-  if (startingKeys.length === 0) return "I’m still learning from the conversations and notes saved in this space. Try sharing a little more context, or ask me to make a plan, brainstorm ideas, or remember a detail.";
-  let state = startingKeys[Math.floor(Math.random() * startingKeys.length)].split(" ");
-  const output = [...state];
-  for (let count = 0; count < 34; count += 1) {
-    const choices = transitions.get(state.join(" "));
-    if (!choices?.length) break;
-    const next = choices[Math.floor(Math.random() * choices.length)];
-    output.push(next);
-    state = [state[1], next];
-    if (output.length > 12 && /[.!?]/.test(next)) break;
-  }
-  const answer = output.join(" ").replace(/\s+([.!?])/g, "$1");
-  return answer.charAt(0).toUpperCase() + answer.slice(1);
-}
-
 function rememberFacts(user, messages) {
   const existing = new Set(user.memories || []);
   for (const message of messages) {
@@ -123,32 +88,29 @@ function rememberFacts(user, messages) {
   user.memories = [...existing].slice(-30);
 }
 
-function reply(user, history, prompt, attachments) {
+function reply(user, history, prompt) {
   const lower = prompt.toLowerCase();
   const memories = user.memories || [];
-  const relevantMemory = memories.find((memory) => lower.split(/\W+/).some((word) => word.length > 3 && memory.toLowerCase().includes(word)));
-  const document = attachments.find((file) => file.content?.trim());
-  const imageFiles = attachments.filter((file) => file.type?.startsWith("image/"));
-  let answer;
-  if (/\b(hello|hi|hey)\b/.test(lower)) answer = `Hi${user.name ? ` ${user.name.split(" ")[0]}` : ""}! What would you like to work on?`;
-  else if (/\b(remember|what do you know about me|what have i told you)\b/.test(lower) && memories.length) answer = `Here’s what I’ve saved from your chats: ${memories.join("; ")}.`;
-  else if (/\b(plan|schedule|organize)\b/.test(lower)) answer = "Let’s make this manageable. 1. Pick the outcome you want. 2. Break it into the next three actions. 3. Choose one action to start now. What’s the goal?";
-  else if (/\b(brainstorm|ideas|creative)\b/.test(lower)) answer = "Let’s explore a few directions: make it simpler, make it unexpected, or combine it with something from a different field. What are we creating, and who is it for?";
-  else if (document) {
-    const terms = new Set(tokenize(prompt).filter((word) => word.length > 3));
-    const sentences = document.content.split(/(?<=[.!?])\s+/).filter(Boolean);
-    const relevant = sentences.map((sentence) => ({ sentence, score: tokenize(sentence).filter((word) => terms.has(word)).length })).sort((left, right) => right.score - left.score)[0];
-    const excerpt = relevant?.score ? relevant.sentence : document.content.slice(0, 360).trim();
-    answer = `From ${document.name}: “${excerpt}”`;
+  if (/\b(hello|hi|hey)\b/.test(lower)) return `Hi${user.name ? ` ${user.name.split(" ")[0]}` : ""}! What would you like to work on?`;
+  if (/\bremember that\b/.test(lower)) return `Got it. I’ll remember: ${prompt.replace(/.*\bremember that\b/i, "").trim()}`;
+  if (/\b(what do you remember|what do you know about me|what have i told you)\b/.test(lower)) {
+    return memories.length ? `Here’s what I’ve saved from your chats: ${memories.join("; ")}.` : "I don’t have any explicit memories saved yet. Tell me “remember that …” and I’ll keep it in your account.";
   }
-  else if (imageFiles.length) answer = `I received ${imageFiles.map((file) => file.name).join(", ")}. Blink Core can’t inspect image pixels yet, but you can describe what’s in the picture and I’ll work with that.`;
-  else if (attachments.length) answer = `I received ${attachments.map((file) => file.name).join(", ")}, but this version can only read plain-text and Markdown files. It can’t inspect images, PDFs, or Word documents yet.`;
-  else if (relevantMemory) answer = `You previously asked me to remember: “${relevantMemory}”. Would you like me to use that here?`;
-  else {
-    const ownChats = history.filter((item) => item.role === "assistant").map((item) => item.content).join(" ");
-    answer = textModel(`${SEED_TEXT} ${ownChats}`, prompt);
+
+  const sources = KNOWLEDGE.map((item) => ({ ...item, kind: "guide" }));
+  for (const document of user.documents || []) sources.push({ title: `Uploaded file: ${document.name}`, text: document.content, kind: "upload" });
+  for (const memory of memories) sources.push({ title: "Saved preference", text: memory, kind: "memory" });
+  for (const chat of (user.chats || []).slice(0, 15)) {
+    for (const message of (chat.messages || []).slice(-20)) {
+      if (message.role === "user" && message.content) sources.push({ title: `Your chat: ${chat.title}`, text: message.content, kind: "chat" });
+    }
   }
-  return answer;
+  for (const message of history.slice(-15)) {
+    if (message.role === "user" && message.content) sources.push({ title: "This conversation", text: message.content, kind: "chat" });
+  }
+  const matches = searchContext(prompt, sources, 1);
+  if (!matches.length) return "I couldn’t find a grounded answer in Blink’s local guides or your saved notes. I’m not a general-purpose language model yet. Try rephrasing, asking about writing, study, planning, or coding, or attach a text/Markdown note.";
+  return `I found this in your local sources:\n\n${matches.map((match) => `${match.title}\n${match.text}`).join("\n\n")}`;
 }
 
 function safeMessages(value) {
@@ -203,7 +165,13 @@ async function handleApi(request, response, url) {
   }
   const user = getUser(request);
   if (!user) return send(response, 401, { error: "Please sign in again." });
-  if (route === "GET /api/chats") return send(response, 200, { chats: user.chats || [], memories: user.memories || [] });
+  if (route === "GET /api/chats") return send(response, 200, { chats: user.chats || [], memories: user.memories || [], documents: (user.documents || []).map(({ name, updatedAt }) => ({ name, updatedAt })) });
+  if (route === "DELETE /api/settings/knowledge") {
+    user.memories = [];
+    user.documents = [];
+    saveStore();
+    return send(response, 200, { ok: true });
+  }
   if (request.method === "DELETE" && url.pathname.startsWith("/api/chats/")) {
     const id = decodeURIComponent(url.pathname.slice("/api/chats/".length));
     user.chats = (user.chats || []).filter((chat) => chat.id !== id);
@@ -230,7 +198,15 @@ async function handleApi(request, response, url) {
     const history = safeMessages(body.history);
     const attachments = Array.isArray(body.attachments) ? body.attachments.slice(0, 5).map((file) => ({ name: String(file.name || "File").slice(0, 100), type: String(file.type || "").slice(0, 80), content: String(file.content || "").slice(0, 12000) })) : [];
     if (!prompt) return send(response, 400, { error: "Write a message first." });
-    const answer = reply(user, history, prompt, attachments);
+    user.documents = user.documents || [];
+    for (const file of attachments.filter((item) => item.content)) {
+      user.documents = user.documents.filter((document) => document.name !== file.name);
+      user.documents.push({ name: file.name, content: file.content, updatedAt: Date.now() });
+    }
+    user.documents = user.documents.slice(-20);
+    let answer = reply(user, history, prompt);
+    if (attachments.some((file) => file.type?.startsWith("image/"))) answer += "\n\nI received your image, but Blink Core cannot inspect image pixels yet.";
+    if (attachments.some((file) => !file.content && !file.type?.startsWith("image/"))) answer += "\n\nI received the file, but can only read plain-text and Markdown files.";
     rememberFacts(user, [...history, { role: "user", content: prompt }]);
     saveStore();
     return send(response, 200, { answer, memories: user.memories });

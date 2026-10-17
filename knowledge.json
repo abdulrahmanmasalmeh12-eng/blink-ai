@@ -1,0 +1,102 @@
+[
+  {
+    "title": "Planning a project",
+    "keywords": ["goal", "steps", "project", "plan", "organize"],
+    "text": "Start by writing down the outcome you want and how you will know it is finished. Break the work into small tasks that each produce a visible result. Identify the first action, dependencies, likely risks, and a review date. Keep the plan short enough to update when new information arrives."
+  },
+  {
+    "title": "Building a daily plan",
+    "keywords": ["day", "schedule", "focus", "time", "priorities"],
+    "text": "Choose one important task and a realistic block of time for it. Add a few smaller tasks, leave space between commitments, and decide what can be postponed. At the end of the day, note what moved forward and choose the next first step."
+  },
+  {
+    "title": "Debugging code",
+    "keywords": ["bug", "error", "debug", "stack", "test", "programming"],
+    "text": "First reproduce the problem with the smallest input that still triggers it. Read the complete error and stack trace, then identify the first line in your code that behaves unexpectedly. Change one thing at a time and rerun the reproducing case. Add a regression test once the cause is understood."
+  },
+  {
+    "title": "Writing a clear explanation",
+    "keywords": ["writing", "explain", "paragraph", "communication", "draft"],
+    "text": "Put the main point first. Give the reader only the context needed to understand it, use concrete words and short paragraphs, and separate facts from recommendations. Remove sentences that repeat an earlier point. Read the result once from the reader's perspective."
+  },
+  {
+    "title": "Summarizing a document",
+    "keywords": ["summary", "summarize", "document", "notes", "text"],
+    "text": "A useful summary preserves the document's main claim, the most important supporting points, and any decision or action it requests. Leave out examples that do not change the conclusion. Keep names, dates, numbers, and uncertainty faithful to the source."
+  },
+  {
+    "title": "Studying a difficult topic",
+    "keywords": ["study", "learn", "practice", "memory", "education"],
+    "text": "Break a topic into small ideas, explain each one in your own words, and test yourself without looking at the notes. Review difficult ideas again after increasing intervals. When an answer is wrong, find the exact step where your understanding stopped matching the explanation."
+  },
+  {
+    "title": "Brainstorming ideas",
+    "keywords": ["creative", "brainstorm", "ideas", "design", "inspiration"],
+    "text": "Generate several different directions before judging them. Change one constraint at a time: the audience, size, materials, tone, or setting. Combine promising ideas, then choose a small version that can be tested quickly. A useful brainstorm ends with a next action, not only a list."
+  },
+  {
+    "title": "Understanding language models",
+    "keywords": ["AI", "model", "language", "training", "transformer", "neural"],
+    "text": "A language model learns statistical patterns from text and uses them to predict likely next tokens. A transformer uses attention layers to relate information across a context. Training changes numerical weights to reduce prediction error on many examples. A small model trained on a small corpus has limited knowledge and reasoning ability; retrieval can help it quote relevant supplied material but does not make it a large model."
+  },
+  {
+    "title": "Training a model from scratch",
+    "keywords": ["train", "training", "weights", "dataset", "from scratch", "GPU"],
+    "text": "Training from scratch starts with randomly initialized model weights rather than a pretrained checkpoint. A practical experiment needs a tokenizer, a legally usable and cleaned text corpus, a model architecture, a training loop, checkpoints, and a held-out evaluation set. More parameters and training tokens require more compute and do not guarantee useful answers. Start with a narrow goal and measure quality on questions the model did not see during training."
+  },
+  {
+    "title": "Evaluating an assistant",
+    "keywords": ["evaluate", "benchmark", "quality", "test", "accuracy"],
+    "text": "Write a fixed set of representative questions and expected answer criteria before changing a model. Include questions with known answers, missing context, misleading wording, and requests outside the system's knowledge. Track correctness, useful abstentions, latency, and regressions after every change. Human review is needed when answers cannot be checked mechanically."
+  },
+  {
+    "title": "JavaScript basics",
+    "keywords": ["javascript", "function", "array", "object", "async", "programming"],
+    "text": "JavaScript represents behavior with functions and data with values such as strings, arrays, and objects. Use const for bindings that are not reassigned and let when reassignment is needed. Promises represent work that completes later; async functions let you await a promise and handle failures with try and catch. Check the runtime's error message and test boundary cases."
+  },
+  {
+    "title": "Designing an HTTP API",
+    "keywords": ["API", "HTTP", "endpoint", "request", "response", "server"],
+    "text": "An HTTP endpoint should have a clear method, path, request shape, and response shape. Use GET for reading, POST for creating or actions, PUT or PATCH for updates, and DELETE for removal. Return status codes that distinguish success, invalid input, missing resources, and server errors. Validate input at the boundary and avoid returning secrets."
+  },
+  {
+    "title": "Using Git safely",
+    "keywords": ["git", "commit", "branch", "version control", "repository"],
+    "text": "A Git commit records a snapshot of staged changes. Check git status before staging, review the diff, and commit one coherent change at a time. Branches let work proceed separately; merge or rebase only after reviewing the resulting history. Never commit credentials, local databases, or generated secrets."
+  },
+  {
+    "title": "Choosing HTML elements",
+    "keywords": ["HTML", "semantic", "accessibility", "web", "form"],
+    "text": "Use HTML elements according to their meaning: buttons perform actions, links navigate, headings structure sections, and labels name form controls. Semantic elements improve keyboard access and help assistive technology interpret a page. Every interactive control should have a visible or accessible name and a clear focus state."
+  },
+  {
+    "title": "Choosing CSS layout",
+    "keywords": ["CSS", "flexbox", "grid", "responsive", "layout", "web design"],
+    "text": "Use Flexbox for arranging items along one primary axis and CSS Grid when rows and columns both matter. Define minimum sizes and allow content to wrap so narrow screens do not overflow. Test at small and large viewport sizes, and verify that controls remain reachable when text grows."
+  },
+  {
+    "title": "Keeping a project secure",
+    "keywords": ["security", "password", "authentication", "secret", "privacy"],
+    "text": "Store password hashes made with a password-specific key derivation function rather than plaintext. Keep tokens and API keys out of source control, use secure cookies over HTTPS, validate user input, and limit repeated login attempts. A prototype authentication system needs a security review before it protects real accounts or sensitive data."
+  },
+  {
+    "title": "Creating a realistic budget",
+    "keywords": ["budget", "cost", "spending", "saving", "money"],
+    "text": "List regular income and essential expenses first, then include irregular costs such as repairs or annual bills. Compare the total with actual recent spending rather than relying on estimates alone. Set a small review interval and adjust categories when the plan repeatedly differs from reality."
+  },
+  {
+    "title": "Working through a math problem",
+    "keywords": ["math", "equation", "calculate", "percentage", "fraction"],
+    "text": "Write down what is known and what needs to be found. Choose an operation or equation that connects them, keep units attached to values, and work through one step at a time. Check the result by estimating its size and substituting it back into the original relationship."
+  },
+  {
+    "title": "Preparing for a conversation",
+    "keywords": ["conversation", "email", "meeting", "communication", "feedback"],
+    "text": "Decide what outcome you want from the conversation. State the situation using specific observations, explain why it matters, and make a clear request. Leave room for the other person to share information you may not have. For written messages, use a subject and opening that make the purpose easy to understand."
+  },
+  {
+    "title": "Responsible AI limitations",
+    "keywords": ["hallucination", "reliable", "limitation", "source", "uncertain"],
+    "text": "Generated answers can sound confident while being wrong. Ground answers in supplied sources when accuracy matters, show where important claims came from, and say when the available evidence is insufficient. Verify high-impact medical, legal, financial, or safety decisions with a qualified professional or authoritative source."
+  }
+]
