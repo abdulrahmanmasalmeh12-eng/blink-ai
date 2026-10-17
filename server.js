@@ -3,6 +3,7 @@ const fs = require("node:fs");
 const path = require("node:path");
 const crypto = require("node:crypto");
 const { searchContext } = require("./lib/retrieval");
+const { searchWikipedia } = require("./lib/public-search");
 
 const PORT = Number(process.env.PORT || 3000);
 const ROOT = __dirname;
@@ -88,7 +89,7 @@ function rememberFacts(user, messages) {
   user.memories = [...existing].slice(-30);
 }
 
-function reply(user, history, prompt) {
+async function reply(user, history, prompt, usePublicLookup) {
   const lower = prompt.toLowerCase();
   const memories = user.memories || [];
   if (/\b(hello|hi|hey)\b/.test(lower)) return `Hi${user.name ? ` ${user.name.split(" ")[0]}` : ""}! What would you like to work on?`;
@@ -102,15 +103,21 @@ function reply(user, history, prompt) {
   for (const memory of memories) sources.push({ title: "Saved preference", text: memory, kind: "memory" });
   for (const chat of (user.chats || []).slice(0, 15)) {
     for (const message of (chat.messages || []).slice(-20)) {
-      if (message.role === "user" && message.content) sources.push({ title: `Your chat: ${chat.title}`, text: message.content, kind: "chat" });
+      if (message.role === "user" && message.content && message.content.trim().toLowerCase() !== prompt.trim().toLowerCase()) {
+        sources.push({ title: `Your chat: ${chat.title}`, text: message.content, kind: "chat" });
+      }
     }
   }
   for (const message of history.slice(-15)) {
     if (message.role === "user" && message.content) sources.push({ title: "This conversation", text: message.content, kind: "chat" });
   }
   const matches = searchContext(prompt, sources, 1);
-  if (!matches.length) return "I couldn’t find a grounded answer in Blink’s local guides or your saved notes. I’m not a general-purpose language model yet. Try rephrasing, asking about writing, study, planning, or coding, or attach a text/Markdown note.";
-  return `I found this in your local sources:\n\n${matches.map((match) => `${match.title}\n${match.text}`).join("\n\n")}`;
+  if (matches.length) return `I found this in your local sources:\n\n${matches[0].title}\n${matches[0].text}`;
+  if (usePublicLookup) {
+    const reference = await searchWikipedia(prompt);
+    if (reference) return `I couldn’t find that in my saved guides, so I looked it up in a public reference. Here’s a starting point:\n\n${reference.title}\n${reference.extract}\n\nSource: ${reference.title}\n${reference.url}`;
+  }
+  return "I couldn’t find a grounded answer in Blink’s local guides or saved notes. You can enable public reference lookup in Settings, attach a text/Markdown note, or try a topic in Blink’s local guides.";
 }
 
 function safeMessages(value) {
@@ -126,7 +133,7 @@ function safeMessages(value) {
 
 async function handleApi(request, response, url) {
   const route = `${request.method} ${url.pathname}`;
-  if (route === "GET /api/health") return send(response, 200, { ok: true, model: "Blink Core 0.1" });
+  if (route === "GET /api/health") return send(response, 200, { ok: true, model: "Blink Core local retrieval with optional public references" });
   if (route === "GET /api/session") {
     const user = getUser(request);
     return send(response, 200, { user: user ? publicUser(user) : null });
@@ -204,7 +211,7 @@ async function handleApi(request, response, url) {
       user.documents.push({ name: file.name, content: file.content, updatedAt: Date.now() });
     }
     user.documents = user.documents.slice(-20);
-    let answer = reply(user, history, prompt);
+    let answer = await reply(user, history, prompt, body.usePublicLookup === true);
     if (attachments.some((file) => file.type?.startsWith("image/"))) answer += "\n\nI received your image, but Blink Core cannot inspect image pixels yet.";
     if (attachments.some((file) => !file.content && !file.type?.startsWith("image/"))) answer += "\n\nI received the file, but can only read plain-text and Markdown files.";
     rememberFacts(user, [...history, { role: "user", content: prompt }]);

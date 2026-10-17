@@ -1,6 +1,6 @@
 # Blink.ai
 
-Blink.ai is an independent, self-hostable chat app. It does not call OpenAI, Anthropic, Google, or any other model API. Its JavaScript retrieval engine ranks relevant passages from an editable, bundled guide library, each account's saved conversations and explicit memories, and uploaded plain-text or Markdown files. It uses no pretrained model and does not generate general-purpose language.
+Blink.ai is an independent, self-hostable chat app. It does not call an AI model API. Its JavaScript retrieval engine ranks relevant passages from an editable, bundled guide library, each account's saved conversations and explicit memories, and uploaded plain-text or Markdown files. If local sources have no answer, the optional public-reference setting can search Wikipedia and show an article citation. Only the current question is sent to Wikimedia; chat history and attachments are not sent. Blink uses no pretrained model and does not generate general-purpose language.
 
 ## Run locally
 
@@ -16,7 +16,7 @@ Run the built-in tests with `npm test`. Add or revise local reference material i
 
 ## What the model can and cannot do
 
-This is an original retrieval system, not a trained language model. It can find relevant passages in its bundled guides, saved user text, and uploaded plain-text or Markdown documents. It cannot reason beyond those sources and will say when it cannot find a grounded match. It runs on the CPU and sends no prompts to an AI provider. Attached image pixels are not analyzed. The image creator makes original deterministic geometric sketches from a prompt; it is not a neural image generator.
+This is an original retrieval system, not a trained language model. It can find relevant passages in its bundled guides, saved user text, and uploaded plain-text or Markdown documents. With public lookup enabled, it can also retrieve an introductory passage from Wikipedia when local sources have no match. It cannot reason beyond those sources and will say when it cannot find a grounded match. The Wikipedia lookup is a public information service, not an AI provider. Attached image pixels are not analyzed. The image creator makes original deterministic geometric sketches from a prompt; it is not a neural image generator.
 
 ## Deploy to Render
 

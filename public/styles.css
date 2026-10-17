@@ -143,6 +143,7 @@ h1 span { color: var(--accent); font-style: italic; }
 .message-avatar { width: 27px; height: 27px; display: grid; place-items: center; border-radius: 9px 9px 9px 3px; background: var(--accent); color: white; font-family: var(--serif); font-size: 14px; }
 .message-body { min-width: 0; padding-top: 2px; font-size: 13px; line-height: 1.75; white-space: pre-wrap; overflow-wrap: anywhere; }
 .message-body p { margin: 0 0 10px; }
+.message-body a { color: var(--accent); text-decoration: underline; text-underline-offset: 2px; }
 .message-label { margin-bottom: 4px; color: var(--muted); font-size: 10px; }
 .message-files { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
 .message-file-image { width: 140px; height: 100px; border-radius: 8px; object-fit: cover; }
@@ -162,6 +163,7 @@ h1 span { color: var(--accent); font-style: italic; }
 .setting-row { display: flex; align-items: center; justify-content: space-between; gap: 15px; min-height: 45px; }
 .setting-row strong { font-size: 12px; font-weight: 500; }
 .setting-row small { display: block; margin-top: 3px; color: var(--muted); font-size: 10px; }
+.lookup-row input { width: 17px; height: 17px; flex: 0 0 17px; accent-color: var(--accent); cursor: pointer; }
 .theme-switch { display: flex; gap: 4px; padding: 3px; border: 1px solid var(--line); border-radius: 9px; background: var(--surface); }
 .theme-switch button { padding: 6px 9px; border: 0; border-radius: 6px; background: transparent; color: var(--muted); font-size: 10px; cursor: pointer; }
 .theme-switch button.selected { background: var(--surface-soft); color: var(--ink); }

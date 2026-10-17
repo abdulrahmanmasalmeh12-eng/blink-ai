@@ -28,7 +28,7 @@
       <button class="side-link" data-view="images"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="m21 15-5-5L5 21"/></svg><span>Image studio</span></button>
       <div class="history-heading"><span>Recent</span><button class="text-button" id="clearHistoryButton" title="Clear recent chats">Clear</button></div>
       <div class="chat-list" id="chatList"></div>
-      <div class="sidebar-bottom"><div class="model-status"><span></span><div><strong>Blink Core</strong><small>Local model · v0.1</small></div></div>
+      <div class="sidebar-bottom"><div class="model-status"><span></span><div><strong>Blink Core</strong><small>Local search + references</small></div></div>
         <button class="profile-button" id="settingsButton"><span class="avatar" id="avatar">B</span><span class="profile-copy"><strong id="profileName">Guest</strong><small id="profileEmail">Guest session</small></span><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.9l.1.1-1.7 2.9-.2-.1a1.7 1.7 0 0 0-1.8.1l-.2.1h-3.4l-.1-.2a1.7 1.7 0 0 0-1.5-1l-.2-.1-2.9 1.7-.1-.2a1.7 1.7 0 0 0-1-1.5l-.1-.2v-3.4l.2-.1a1.7 1.7 0 0 0 1-1.5l.1-.2-1.7-2.9.2-.1a1.7 1.7 0 0 0 1.5-1l.2-.1h3.4l.1.2a1.7 1.7 0 0 0 1.5 1l.2.1 2.9-1.7.1.2a1.7 1.7 0 0 0 1 1.5l.1.2z"/></svg></button>
       </div>
     </aside>
@@ -57,12 +57,12 @@
           <textarea id="messageInput" rows="1" placeholder="Message Blink.ai" aria-label="Message Blink.ai"></textarea>
           <button class="send-button" id="sendButton" type="submit" aria-label="Send message" disabled><svg viewBox="0 0 24 24"><path d="M12 19V5m-7 7 7-7 7 7"/></svg></button>
         </form>
-        <div class="composer-note"><span>Original Blink Core · no external AI APIs</span><span>Enter to send · Shift + Enter for a new line</span></div>
+        <div class="composer-note"><span id="lookupNote">Local guides first · public lookup on misses</span><span>Enter to send · Shift + Enter for a new line</span></div>
       </div>
       <footer class="footer-note" id="footerNote">Blink Core searches local guides and your saved notes. It is not a general-purpose language model.</footer>
     </main>
   </div>
   <div class="toast" id="toast" role="status"></div>
-  <script src="/app.js?v=3" defer></script>
+  <script src="/app.js?v=4" defer></script>
 </body>
 </html>

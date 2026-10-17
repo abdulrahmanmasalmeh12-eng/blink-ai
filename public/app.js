@@ -27,6 +27,15 @@ function setTheme(theme) {
   localStorage.setItem("blink-theme", theme);
 }
 
+function publicLookupEnabled() {
+  return localStorage.getItem("blink-public-lookup") !== "false";
+}
+
+function updateLookupNote() {
+  const note = $("#lookupNote");
+  if (note) note.textContent = publicLookupEnabled() ? "Local guides first · public lookup on misses" : "Local guides only · public lookup off";
+}
+
 function authMarkup(mode) {
   if (mode === "welcome") return `<h1>A little room<br>to <span>think.</span></h1><p>Meet Blink.ai, your own small, independent space for ideas and conversations.</p><div class="auth-actions"><button class="auth-primary" data-auth="signup">Create an account</button><button class="auth-secondary" data-auth="login">Sign in</button></div><div class="auth-divider">or keep it simple</div><div class="auth-actions"><button class="auth-secondary" data-auth="guest">Continue as guest</button></div>`;
   if (mode === "forgot") return `<button class="auth-back" data-auth="welcome">← Back</button><h1>Reset password</h1><p>Enter your account email to request a reset. Blink.ai needs an email provider to send recovery links.</p><form class="form-stack" data-form="forgot"><label class="field-label">Email address<input name="email" type="email" autocomplete="email" required></label><div class="form-error" role="alert"></div><button class="auth-primary" type="submit">Request reset link</button></form>`;
@@ -154,7 +163,7 @@ function renderMessage(message) {
     label.className = "message-label";
     label.textContent = "Blink Core";
     const text = document.createElement("div");
-    text.textContent = message.content;
+    appendAnswerContent(text, message.content);
     body.append(label, text);
     wrapper.append(avatar, body);
   }
@@ -179,6 +188,22 @@ function renderMessage(message) {
     target.append(files);
   }
   $("#conversation").append(wrapper);
+}
+
+function appendAnswerContent(container, content) {
+  const sourcePattern = /(https:\/\/en\.wikipedia\.org\/\?curid=\d+)/g;
+  let previous = 0;
+  for (const match of content.matchAll(sourcePattern)) {
+    container.append(document.createTextNode(content.slice(previous, match.index)));
+    const link = document.createElement("a");
+    link.href = match[0];
+    link.target = "_blank";
+    link.rel = "noopener noreferrer";
+    link.textContent = "Open Wikipedia article";
+    container.append(link);
+    previous = match.index + match[0].length;
+  }
+  container.append(document.createTextNode(content.slice(previous)));
 }
 
 function showTyping() {
@@ -217,7 +242,7 @@ async function sendMessage(text) {
   $("#sendButton").disabled = true;
   const typing = showTyping();
   try {
-    const result = await api("/api/chat", { method: "POST", body: JSON.stringify({ prompt, history, attachments: files.map(({ name, type, content }) => ({ name, type, content })) }) });
+    const result = await api("/api/chat", { method: "POST", body: JSON.stringify({ prompt, history, usePublicLookup: publicLookupEnabled(), attachments: files.map(({ name, type, content }) => ({ name, type, content })) }) });
     typing.remove();
     addMessage("assistant", result.answer);
     await saveChat();
@@ -288,10 +313,15 @@ function showSettings() {
     <h1 class="page-heading">Settings</h1>
     <p class="page-subtitle">A few things to make Blink feel like yours.</p>
     <section class="settings-section"><h2>Appearance</h2><p>Choose a theme for this device.</p><div class="setting-row"><strong>Color theme</strong><div class="theme-switch"><button data-theme-choice="light" class="${theme === "light" ? "selected" : ""}">☼ Light</button><button data-theme-choice="dark" class="${theme === "dark" ? "selected" : ""}">☾ Dark</button></div></div></section>
+    <section class="settings-section"><h2>Public reference lookup</h2><p>If Blink cannot answer from local guides or your saved sources, it can search Wikipedia. Only your current question is sent; chat history and attachments are not sent. This is a public reference search, not an AI service.</p><label class="setting-row lookup-row"><span><strong>Search Wikipedia when local sources miss</strong><small>You can turn this off at any time.</small></span><input type="checkbox" id="publicLookupToggle" ${publicLookupEnabled() ? "checked" : ""}></label></section>
     <section class="settings-section"><h2>Account</h2><p>${accountMessage}</p>${state.user.guest ? '<button class="outline-button" data-auth="signup">Create an account</button>' : `<div class="setting-row"><div><strong>Change password</strong><small>Use at least 8 characters.</small></div><button class="outline-button" id="passwordButton">Update password</button></div><div id="passwordForm"></div>`}<div class="setting-row"><strong>Current session</strong><button class="outline-button" id="logoutButton">${state.user.guest ? "Exit guest session" : "Sign out"}</button></div></section>
     <section class="settings-section"><h2>Memory and sources</h2><p>Blink searches details you asked it to remember, your saved chats, and uploaded text or Markdown. Uploaded text is stored with your account on this server.</p><div class="account-note">${savedNotes.map(escapeHtml).join("<br>") || "No personal notes or uploaded text saved yet."}</div>${savedNotes.length ? '<div class="setting-row"><span></span><button class="outline-button" id="clearMemoryButton">Clear saved notes and uploads</button></div>' : ""}</section>
     <section class="settings-section"><h2>About Blink Core</h2><p>An in-house local retrieval system. It searches editable guides, saved notes, and uploaded text; it is not a trained language model and does not use external AI services.</p></section>`;
   $("#settingsView").querySelectorAll("[data-theme-choice]").forEach((button) => button.addEventListener("click", () => { setTheme(button.dataset.themeChoice); showSettings(); }));
+  $("#publicLookupToggle").addEventListener("change", (event) => {
+    localStorage.setItem("blink-public-lookup", String(event.currentTarget.checked));
+    updateLookupNote();
+  });
   $("#passwordButton")?.addEventListener("click", () => renderPasswordForm());
   $("#clearMemoryButton")?.addEventListener("click", async () => {
     try {
@@ -444,5 +474,6 @@ document.addEventListener("keydown", (event) => {
 document.querySelectorAll(".side-link").forEach((button) => button.addEventListener("click", closeMobileSidebar));
 
 setTheme(state.theme);
+updateLookupNote();
 fetch("/api/session").then((response) => response.json()).then(({ user }) => user ? enterApp(user) : showAuth()).catch(() => showAuth());
 if ("serviceWorker" in navigator) navigator.serviceWorker.register("/sw.js").catch(() => {});

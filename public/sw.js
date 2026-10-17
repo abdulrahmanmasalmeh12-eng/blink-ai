@@ -1,5 +1,5 @@
-const CACHE = "blink-shell-v4";
-const SHELL = ["/", "/styles.css?v=2", "/app.js?v=3", "/manifest.webmanifest"];
+const CACHE = "blink-shell-v5";
+const SHELL = ["/", "/styles.css?v=2", "/app.js?v=4", "/manifest.webmanifest"];
 
 self.addEventListener("install", (event) => {
   event.waitUntil(caches.open(CACHE).then((cache) => cache.addAll(SHELL)));
